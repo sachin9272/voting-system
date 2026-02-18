@@ -30,12 +30,6 @@ const App = () => {
 
       {/* CandidateDashboard Page */}
       <Route path="/CandidateDashboard" element={<CandidateDashboardPage/>} />
-      
-
-        
-      
-
-
 
     </Routes>
   )
