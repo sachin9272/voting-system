@@ -2,10 +2,52 @@ import React, { useState } from "react";
 import { FaEnvelope, FaLock } from "react-icons/fa";
 import { FiEye, FiEyeOff } from "react-icons/fi";
 import { MdHowToVote } from "react-icons/md";
-import { Link } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import { login } from "../api/authService";
+import { useAuth } from "../context/AuthContext";
 
 const VoterLogin = () => {
   const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const { saveAuth } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  // Redirect to the page the user was trying to visit, or fall back to /election
+  const from = location.state?.from?.pathname || "/election";
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+
+    if (!email || !password) {
+      setError("Please fill in all fields.");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const authData = await login({ email, password });
+      saveAuth(authData);
+
+      // Role-based redirect
+      if (authData.role === "admin") {
+        navigate("/admin", { replace: true });
+      } else if (authData.role === "candidate") {
+        navigate("/CandidateDashboard", { replace: true });
+      } else {
+        navigate(from, { replace: true });
+      }
+    } catch (err) {
+      setError(err.message || "Login failed. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-100 via-blue-50 to-gray-200 flex items-center justify-center relative px-4">
@@ -28,62 +70,80 @@ const VoterLogin = () => {
           Secure access to the 2024 Election Portal
         </p>
 
-        {/* Email Field */}
-        <div className="mb-5">
-          <label className="block text-sm text-gray-600 mb-2">
-            Email Address
-          </label>
-          <div className="flex items-center border border-gray-300 rounded-lg px-3 py-2 focus-within:ring-2 focus-within:ring-blue-500 transition">
-            <FaEnvelope className="text-gray-400 mr-2" />
-            <input
-              type="email"
-              placeholder="voter@organization.com"
-              className="w-full outline-none text-sm bg-transparent"
-            />
+        {/* Error Banner */}
+        {error && (
+          <div className="mb-4 px-4 py-3 bg-red-50 border border-red-200 rounded-lg text-red-600 text-sm text-center">
+            {error}
           </div>
-        </div>
+        )}
 
-        {/* Password Field */}
-        <div className="mb-3">
-          <div className="flex justify-between items-center mb-2">
-            <label className="text-sm text-gray-600">Password</label>
-            <a href="#" className="text-blue-600 text-xs hover:underline">
-              Forgot password?
-            </a>
+        <form onSubmit={handleSubmit} noValidate>
+          {/* Email Field */}
+          <div className="mb-5">
+            <label className="block text-sm text-gray-600 mb-2">
+              Email Address
+            </label>
+            <div className="flex items-center border border-gray-300 rounded-lg px-3 py-2 focus-within:ring-2 focus-within:ring-blue-500 transition">
+              <FaEnvelope className="text-gray-400 mr-2" />
+              <input
+                id="login-email"
+                type="email"
+                placeholder="voter@organization.com"
+                className="w-full outline-none text-sm bg-transparent"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                autoComplete="email"
+              />
+            </div>
           </div>
 
-          <div className="flex items-center border border-gray-300 rounded-lg px-3 py-2 focus-within:ring-2 focus-within:ring-blue-500 transition">
-            <FaLock className="text-gray-400 mr-2" />
-            <input
-              type={showPassword ? "text" : "password"}
-              placeholder="••••••••"
-              className="w-full outline-none text-sm bg-transparent"
-            />
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="text-gray-400 hover:text-gray-600"
-            >
-              {showPassword ? <FiEye /> : <FiEyeOff />}
-            </button>
+          {/* Password Field */}
+          <div className="mb-3">
+            <div className="flex justify-between items-center mb-2">
+              <label className="text-sm text-gray-600">Password</label>
+              <a href="#" className="text-blue-600 text-xs hover:underline">
+                Forgot password?
+              </a>
+            </div>
+
+            <div className="flex items-center border border-gray-300 rounded-lg px-3 py-2 focus-within:ring-2 focus-within:ring-blue-500 transition">
+              <FaLock className="text-gray-400 mr-2" />
+              <input
+                id="login-password"
+                type={showPassword ? "text" : "password"}
+                placeholder="••••••••"
+                className="w-full outline-none text-sm bg-transparent"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                autoComplete="current-password"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="text-gray-400 hover:text-gray-600"
+              >
+                {showPassword ? <FiEye /> : <FiEyeOff />}
+              </button>
+            </div>
           </div>
-        </div>
 
-        {/* Checkbox */}
-        <div className="flex items-center mb-6">
-          <input
-            type="checkbox"
-            className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
-          />
-          <span className="ml-2 text-sm text-gray-600">
-            Stay signed in for 30 days
-          </span>
-        </div>
-
-        {/* Login Button */}
-        <button className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-lg transition duration-300 font-medium shadow-md">
-          Log In to Vote
-        </button>
+          {/* Login Button */}
+          <button
+            id="login-submit"
+            type="submit"
+            disabled={loading}
+            className="mt-6 w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white py-3 rounded-lg transition duration-300 font-medium shadow-md flex items-center justify-center gap-2"
+          >
+            {loading ? (
+              <>
+                <span className="animate-spin rounded-full h-4 w-4 border-t-2 border-white" />
+                Logging in…
+              </>
+            ) : (
+              "Log In to Vote"
+            )}
+          </button>
+        </form>
 
         {/* Security Note */}
         <div className="mt-6 text-center text-xs text-green-600">
@@ -94,7 +154,7 @@ const VoterLogin = () => {
         <p className="text-center text-sm text-gray-500 mt-6">
           Don't have a voting account?{" "}
           <Link to="/register" className="text-blue-600 hover:underline font-medium">
-            Register for elections 
+            Register for elections
           </Link>
         </p>
       </div>

@@ -1,9 +1,10 @@
 import express from "express";
+import { castVote, getMyVotes } from "../controllers/voteController.js";
+import { protect } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-router.get("/", (req, res) => {
-  res.json({ message: "Vote API Working" });
-});
+router.post("/cast", protect, castVote);
+router.get("/my-votes", protect, getMyVotes);
 
 export default router;

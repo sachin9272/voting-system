@@ -2,25 +2,41 @@ import express from "express";
 import mongoose from "mongoose";
 import cors from "cors";
 import dotenv from "dotenv";
+import path from "path";
+import { fileURLToPath } from "url";
 
-import voteRoutes from "./routes/voteRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
-
+import electionRoutes from "./routes/electionRoutes.js";
+import voteRoutes from "./routes/voteRoutes.js";
 
 dotenv.config();
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 const app = express();
 
-app.use(cors());
+app.use(
+  cors({
+    origin: ["http://localhost:5173", "http://localhost:3000"],
+    credentials: true,
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
+
 app.use(express.json());
 
-mongoose.connect(process.env.MONGO_URI)
+// Serve uploaded files (Aadhar cards, candidate photos, party symbols)
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
+mongoose
+  .connect(process.env.MONGO_URI)
   .then(() => console.log("MongoDB Connected"))
   .catch((err) => console.log(err));
 
-app.use("/api/votes", voteRoutes);
 app.use("/api/auth", authRoutes);
-
+app.use("/api/elections", electionRoutes);
+app.use("/api/votes", voteRoutes);
 
 const PORT = process.env.PORT || 5000;
 
