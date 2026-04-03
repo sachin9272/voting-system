@@ -19,12 +19,17 @@ const voteSchema = new mongoose.Schema(
             ref: "Election",
             required: true,
         },
+
+        role: {
+            type: String,
+            required: true,
+        },
     },
     { timestamps: true }
 );
 
-// Each voter can only vote once per election
-voteSchema.index({ voter: 1, election: 1 }, { unique: true });
+// Each voter can only vote once per role in a given election
+voteSchema.index({ voter: 1, election: 1, role: 1 }, { unique: true });
 
 const Vote = mongoose.model("Vote", voteSchema);
 export default Vote;

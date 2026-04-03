@@ -34,16 +34,24 @@ const userSchema = new mongoose.Schema(
       default: false,
     },
 
-    // Aadhar card images (front and back)
-    aadharFront: {
+    // Identification Card images (front and back)
+    idCardFront: {
       type: String, // file path after upload
       default: "",
     },
 
-    aadharBack: {
+    idCardBack: {
       type: String,
       default: "",
     },
+
+    // The elections the voter is registered for
+    registeredElections: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Election",
+      }
+    ],
 
     // Track if this voter has voted in which elections
     votedElections: [
@@ -58,10 +66,24 @@ const userSchema = new mongoose.Schema(
       default: "",
     },
 
-    address: {
+    department: {
       type: String,
       default: "",
     },
+
+    year: {
+      type: String,
+      default: "",
+    },
+
+    section: {
+      type: String,
+      default: "",
+    },
+
+    // Password reset fields
+    resetPasswordToken: String,
+    resetPasswordExpire: Date,
   },
   { timestamps: true }
 );

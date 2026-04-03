@@ -35,6 +35,28 @@ const electionSchema = new mongoose.Schema(
                 ref: "Candidate",
             },
         ],
+
+        // 🔗 Eligibility & Targeting
+        type: {
+            type: String,
+            enum: ["General", "CR"], // General = for Secretary/Joint Secretary, etc.
+            default: "General",
+        },
+
+        targetYear: {
+            type: String, // "1st Year", "2nd Year", "3rd Year", or "All"
+            default: "All",
+        },
+
+        targetDepartment: {
+            type: String, // "BCA", "BBA", etc., or "All"
+            default: "All",
+        },
+
+        targetSection: {
+            type: String, // "A", "B", etc., or "All"
+            default: "All",
+        },
     },
     { timestamps: true }
 );

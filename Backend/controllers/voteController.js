@@ -15,6 +15,11 @@ export const castVote = async (req, res) => {
             return res.status(403).json({ message: "You must be verified by admin before voting." });
         }
 
+        // Check assigned election
+        if (voter.registeredElections && !voter.registeredElections.includes(electionId)) {
+            return res.status(403).json({ message: "You are not registered to vote in this specific election." });
+        }
+
         // Check election is active
         const election = await Election.findById(electionId);
         if (!election) return res.status(404).json({ message: "Election not found" });
@@ -22,25 +27,31 @@ export const castVote = async (req, res) => {
             return res.status(400).json({ message: "Voting is not open for this election." });
         }
 
-        // Check already voted
-        const alreadyVoted = await Vote.findOne({ voter: voterId, election: electionId });
+        // Fetch candidate to get the role
+        const candidate = await Candidate.findById(candidateId);
+        if (!candidate) return res.status(404).json({ message: "Candidate not found" });
+
+        const candidateRole = candidate.role;
+
+        // Check if already voted for this role in this election
+        const alreadyVoted = await Vote.findOne({ voter: voterId, election: electionId, role: candidateRole });
         if (alreadyVoted) {
-            return res.status(400).json({ message: "You have already voted in this election." });
+            return res.status(400).json({ message: `You have already cast a vote for the ${candidateRole} role.` });
         }
 
         // Create vote
-        await Vote.create({ voter: voterId, candidate: candidateId, election: electionId });
+        await Vote.create({ voter: voterId, candidate: candidateId, election: electionId, role: candidateRole });
 
         // Increment candidate vote count
         await Candidate.findByIdAndUpdate(candidateId, { $inc: { voteCount: 1 } });
 
-        // Mark voter as voted for this election
-        await User.findByIdAndUpdate(voterId, { $addToSet: { votedElections: electionId } });
+        // We no longer strictly store `votedElections` as a boolean toggle since they might return to vote for other roles.
+        // We can just rely on `Vote` database entries to check what roles they voted for.
 
         res.json({ message: "Vote cast successfully!" });
     } catch (err) {
         if (err.code === 11000) {
-            return res.status(400).json({ message: "You have already voted in this election." });
+            return res.status(400).json({ message: "You have already voted for this role." });
         }
         res.status(500).json({ message: err.message });
     }

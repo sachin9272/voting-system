@@ -46,6 +46,16 @@ const candidateSchema = new mongoose.Schema(
             required: true,
         },
 
+        role: {
+            type: String,
+            enum: ["Secretary", "Joint Secretary", "Additional Joint Secretary", "CR"],
+            default: "CR",
+        },
+
+        targetYear: { type: String, default: "All" },
+        targetDepartment: { type: String, default: "All" },
+        targetSection: { type: String, default: "All" },
+
         voteCount: {
             type: Number,
             default: 0,

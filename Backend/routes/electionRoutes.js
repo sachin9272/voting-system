@@ -2,6 +2,7 @@ import express from "express";
 import multer from "multer";
 import {
     getElections,
+    getPublicElections,
     getElectionById,
     createElection,
     startElection,
@@ -11,6 +12,8 @@ import {
     addCandidate,
     getCandidates,
     deleteCandidate,
+    updateCandidate,
+    updateElection,
 } from "../controllers/electionController.js";
 import { protect, adminOnly } from "../middleware/authMiddleware.js";
 
@@ -26,12 +29,14 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 // Public / Voter
+router.get("/public", getPublicElections);
 router.get("/", protect, getElections);
 router.get("/:id", protect, getElectionById);
 router.get("/:id/candidates", protect, getCandidates);
 
 // Admin only
 router.post("/", protect, adminOnly, createElection);
+router.put("/:id", protect, adminOnly, updateElection);
 router.put("/:id/start", protect, adminOnly, startElection);
 router.put("/:id/stop", protect, adminOnly, stopElection);
 router.get("/:id/results", protect, adminOnly, getElectionResults);
@@ -45,5 +50,13 @@ router.post(
     addCandidate
 );
 router.delete("/candidates/:id", protect, adminOnly, deleteCandidate);
+
+router.put(
+    "/candidates/:id",
+    protect,
+    adminOnly,
+    upload.fields([{ name: "photo", maxCount: 1 }, { name: "partySymbol", maxCount: 1 }]),
+    updateCandidate
+);
 
 export default router;

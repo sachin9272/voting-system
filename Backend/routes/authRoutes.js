@@ -8,12 +8,15 @@ import {
   getVoters,
   verifyVoter,
   rejectVoter,
+  forgotPassword,
+  resetPassword,
+  changePassword,
 } from "../controllers/authController.js";
 import { protect, adminOnly } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-// Multer config for Aadhar uploads
+// Multer config for ID card uploads
 const storage = multer.diskStorage({
   destination: "uploads/",
   filename: (req, file, cb) => {
@@ -25,13 +28,16 @@ const upload = multer({ storage });
 // Public
 router.post(
   "/register",
-  upload.fields([{ name: "aadharFront", maxCount: 1 }, { name: "aadharBack", maxCount: 1 }]),
+  upload.fields([{ name: "idCardFront", maxCount: 1 }, { name: "idCardBack", maxCount: 1 }]),
   registerUser
 );
 router.post("/login", loginUser);
+router.post("/forgot-password", forgotPassword);
+router.put("/reset-password/:resetToken", resetPassword);
 
 // Protected
 router.get("/profile", protect, getUserProfile);
+router.put("/change-password", protect, changePassword);
 
 // Admin — voter management
 router.get("/voters", protect, adminOnly, getVoters);

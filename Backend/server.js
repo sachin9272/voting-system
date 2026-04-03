@@ -26,7 +26,7 @@ app.use(
 
 app.use(express.json());
 
-// Serve uploaded files (Aadhar cards, candidate photos, party symbols)
+// Serve uploaded files (ID cards, candidate photos, party symbols)
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 mongoose
@@ -41,5 +41,6 @@ app.use("/api/votes", voteRoutes);
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`\n🚀 [SERVER_UP] Voting System Backend running on port ${PORT}`);
+  console.log(`📡 [READY] Monitoring Election Completion & Email Dispatches...\n`);
 });
