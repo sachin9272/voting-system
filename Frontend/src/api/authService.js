@@ -1,5 +1,5 @@
-// Base URL is proxied by Vite → http://localhost:5000
-const BASE_URL = "/api/auth";
+import { API_BASE_URL } from "./config";
+const BASE_URL = `${API_BASE_URL}/auth`;
 
 /**
  * Registers a new voter via FormData (supports ID Card uploads).

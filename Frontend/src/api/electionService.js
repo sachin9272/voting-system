@@ -1,4 +1,5 @@
-const BASE_URL = "/api/elections";
+import { API_BASE_URL } from "./config";
+const BASE_URL = `${API_BASE_URL}/elections`;
 
 const getHeaders = (token, isFormData = false) => {
     const headers = { Authorization: `Bearer ${token}` };

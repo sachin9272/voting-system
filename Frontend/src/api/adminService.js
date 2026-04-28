@@ -1,4 +1,5 @@
-const BASE_URL = "/api/auth/voters";
+import { API_BASE_URL } from "./config";
+const BASE_URL = `${API_BASE_URL}/auth/voters`;
 
 const getHeaders = (token) => ({
     "Content-Type": "application/json",

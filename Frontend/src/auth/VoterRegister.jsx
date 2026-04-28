@@ -4,6 +4,7 @@ import { FiArrowLeft } from 'react-icons/fi';
 import { Link, useNavigate } from 'react-router-dom';
 import { register } from '../api/authService';
 import { useAuth } from '../context/AuthContext';
+import { API_BASE_URL } from '../api/config';
 import './auth.css';
 
 const VoterRegister = () => {
@@ -29,7 +30,7 @@ const VoterRegister = () => {
   useEffect(() => {
     const fetchElections = async () => {
       try {
-        const res = await fetch('/api/elections/public');
+        const res = await fetch(`${API_BASE_URL}/elections/public`);
         const data = await res.json();
         if (res.ok) setElections(data);
       } catch (err) {
